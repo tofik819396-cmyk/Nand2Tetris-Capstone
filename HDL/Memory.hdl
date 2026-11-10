@@ -1,0 +1,21 @@
+// Memory.hdl
+// Address space: RAM16K (0x0000-0x3FFF), Screen (0x4000-0x5FFF), Keyboard (0x6000)
+
+CHIP Memory {
+    IN in[16], load, address[15];
+    OUT out[16];
+
+    PARTS:
+    // Address decoding: address[13..14]
+    // 00 or 01 -> RAM16K
+    // 10       -> Screen
+    // 11       -> Keyboard
+    DMux4Way(in=load, sel=address[13..14], a=loadram1, b=loadram2, c=loadscreen, d=loadkbd);
+    Or(a=loadram1, b=loadram2, out=loadram);
+
+    RAM16K(in=in, load=loadram, address=address[0..13], out=outram);
+    Screen(in=in, load=loadscreen, address=address[0..12], out=outscreen);
+    Keyboard(out=outkbd);
+
+    Mux4Way16(a=outram, b=outram, c=outscreen, d=outkbd, sel=address[13..14], out=out);
+}
